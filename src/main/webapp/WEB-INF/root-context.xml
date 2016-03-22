@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd
+  http://www.springframework.org/schema/tx 
+  http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+
+	<context:component-scan base-package="com.salvatorio" />
+	<context:property-placeholder location="classpath:database.properties" />
+
+
+	<!-- DataSource -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${database.driverClass}"/>
+		<property name="url" value="${database.url}"/>
+		<property name="username" value="${database.user}"/>
+		<property name="password" value="${database.password}"/>
+	</bean>
+
+
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan">
+			<list>
+				<value>com.salvatorio.model</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="20971520" />
+		<!--<property name="maxInMemorySize" value="1048576" />-->
+	</bean>
+
+	<!-- Transaction -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+
+	<bean id="persistenceExceptionTranslationPostProcessor"
+		  class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+</beans>
